@@ -3498,17 +3498,20 @@ var parseCentralDirectory = function parseCentralDirectory(reader) {
 function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var isPromiseSuppoted = typeof Promise === 'function';
-var PromiseLike$1 = isPromiseSuppoted ? Promise : function PromiseLike(executor) {
+var PromiseLike = isPromiseSuppoted ? Promise : function PromiseLike(executor) {
 	_classCallCheck$1(this, PromiseLike);
 
 	var callback = function callback() {};
 	var resolve = function resolve() {
+
 		callback();
 	};
+
 	executor(resolve);
 
 	return {
 		then: function then(_callback) {
+
 			callback = _callback;
 		}
 	};
@@ -3521,7 +3524,7 @@ var THREE = void 0;
 var ZipLoader = function () {
 	ZipLoader.unzip = function unzip(blobOrFile) {
 
-		return new PromiseLike$1(function (resolve) {
+		return new PromiseLike(function (resolve) {
 
 			var instance = new ZipLoader();
 			var fileReader = new FileReader();
@@ -3553,7 +3556,7 @@ var ZipLoader = function () {
 	ZipLoader.prototype.load = function load() {
 		var _this = this;
 
-		return new PromiseLike$1(function (resolve) {
+		return new PromiseLike(function (resolve) {
 
 			var startTime = Date.now();
 			var xhr = new XMLHttpRequest();
@@ -3578,6 +3581,14 @@ var ZipLoader = function () {
 					elapsedTime: Date.now() - startTime
 				});
 				resolve();
+			};
+
+			xhr.onerror = function (e) {
+
+				_this.dispatch({
+					type: 'error',
+					error: e
+				});
 			};
 
 			xhr.send();
