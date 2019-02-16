@@ -3504,17 +3504,20 @@
 	function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var isPromiseSuppoted = typeof Promise === 'function';
-	var PromiseLike$1 = isPromiseSuppoted ? Promise : function PromiseLike(executor) {
+	var PromiseLike = isPromiseSuppoted ? Promise : function PromiseLike(executor) {
 		_classCallCheck$1(this, PromiseLike);
 
 		var callback = function callback() {};
 		var resolve = function resolve() {
+
 			callback();
 		};
+
 		executor(resolve);
 
 		return {
 			then: function then(_callback) {
+
 				callback = _callback;
 			}
 		};
@@ -3527,7 +3530,7 @@
 	var ZipLoader = function () {
 		ZipLoader.unzip = function unzip(blobOrFile) {
 
-			return new PromiseLike$1(function (resolve) {
+			return new PromiseLike(function (resolve) {
 
 				var instance = new ZipLoader();
 				var fileReader = new FileReader();
@@ -3551,6 +3554,7 @@
 
 			this._id = count;
 			this._listeners = {};
+			this.xhr = null;
 			this.url = url;
 			this.files = null;
 			count++;
@@ -3559,10 +3563,10 @@
 		ZipLoader.prototype.load = function load() {
 			var _this = this;
 
-			return new PromiseLike$1(function (resolve) {
+			return new PromiseLike(function (resolve) {
 
 				var startTime = Date.now();
-				var xhr = new XMLHttpRequest();
+				var xhr = _this.xhr = new XMLHttpRequest();
 				xhr.open('GET', _this.url, true);
 				xhr.responseType = 'arraybuffer';
 
@@ -3584,6 +3588,14 @@
 						elapsedTime: Date.now() - startTime
 					});
 					resolve();
+				};
+
+				xhr.onerror = function (event) {
+
+					_this.dispatch({
+						type: 'error',
+						error: event
+					});
 				};
 
 				xhr.send();
